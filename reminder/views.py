@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
-
+from datetime import date as _date
 from reminder.models import Reminder
 from .serializers import ReminderSerializer
 
@@ -29,10 +29,32 @@ class RemindersView(generics.GenericAPIView):
       'results' : serializers.data
       
     })
+class ReminderTodayView(generics.GenericAPIView):
+  serializer_class = ReminderSerializer
+  permission_classes = [permissions.IsAuthenticated]
+  def get(self, request):
+    reminders = Reminder.objects.filter(start_date = _date.today())
+    serializers = ReminderSerializer(reminders, many=True)
+    
+    return Response({
+      'results' : serializers.data
+    })
+
+class ReminderSpecificView(generics.GenericAPIView):
+  serializer_class = ReminderSerializer
+  permission_classes = [permissions.IsAuthenticated]
+
+  def get(self, request, id):
+    reminder = Reminder.objects.get(id=id)
+    serializer = self.get_serializer(reminder)
+    return Response({
+      'reminder' : serializer.data
+    })
 
   def delete(self, request, id):
     reminder = Reminder.objects.filter(id = id).first()
     deleted = self.get_serializer(reminder)
+    deleted.data
     reminder.delete()
     return Response({
       'deleted' : deleted.data
@@ -52,19 +74,4 @@ class RemindersView(generics.GenericAPIView):
 
     return Response({
       "msg" : instance.data
-    })
-
-
-
-class ReminderListView(generics.GenericAPIView):
-  serializer_class = ReminderSerializer
-  permission_classes = [permissions.IsAuthenticated]
-
-  def get(self, request):
-    date = request.query_params.get('date')
-    reminders = Reminder.objects.filter(start_date = date)
-    serializers = ReminderSerializer(reminders, many=True)
-    
-    return Response({
-      'results' : serializers.data
     })
