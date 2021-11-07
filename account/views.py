@@ -7,6 +7,16 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import AuthenticationFailed
 
 # Create your views here.
+class UserView(generics.GenericAPIView):
+  serializer_class = UserSerializer
+  permission_classes = [permissions.IsAuthenticated]
+
+  def get(self, request):
+    user = self.get_serializer(request.user)
+
+    return Response({
+      'user': user.data
+    })
 
 class RegisterView(generics.GenericAPIView):
   serializer_class = RegisterSerializer
