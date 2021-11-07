@@ -6,3 +6,15 @@ class RegisterSerializer(serializers.ModelSerializer):
     model = User
     fields = ['first_name', 'last_name', 'username', 'email', 'password']
 
+  def create(self, data):
+    password = data.pop('password', None)
+    instance = self.Meta.model(**data)
+    if password is not None:
+      instance.set_password(password)
+    instance.save()
+    return instance
+
+class LoginSerializers(serializers.ModelSerializer):
+  class Meta:
+    model = User
+    fields = ['email', 'password']
