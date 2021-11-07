@@ -1,7 +1,10 @@
 from rest_framework import generics, permissions
-from .serializers import LoginSerializers, RegisterSerializer
+
+from .models import User
+from .serializers import LoginSerializers, RegisterSerializer, UserSerializer
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.exceptions import AuthenticationFailed
 
 # Create your views here.
 
@@ -15,8 +18,9 @@ class RegisterView(generics.GenericAPIView):
     instance.is_valid(raise_exception=True)
     user = instance.save()
     refresh = RefreshToken.for_user(user)
-
+    user = UserSerializer(user)
     return Response({
+      "user": user.data,
       "token": str(refresh),
       "access_token": str(refresh.access_token)
     })
@@ -28,7 +32,16 @@ class LoginView(generics.GenericAPIView):
   def post(self, request):
     email = request.data["email"]
     password = request.data['password']
+    user = User.objects.filter(email = email).first()
+    if user is None:
+      raise AuthenticationFailed('no username')
+    if not user.check_password(password):
+      raise AuthenticationFailed('Wrong password')
+    
+    refresh = RefreshToken.for_user(user)
+    user = UserSerializer(user)
     return Response({
-      "token": str(email),
-      "access_token": str(password)
+      "user" : user.data,
+      "token": str(refresh),
+      "access_token": str(refresh.access_token)
     })
