@@ -31,8 +31,10 @@ class RegisterView(generics.GenericAPIView):
     user = UserSerializer(user)
     return Response({
       "user": user.data,
-      "token": str(refresh),
-      "access_token": str(refresh.access_token)
+      "token" : {
+        "refresh": str(refresh),
+        "access_token": str(refresh.access_token)
+      }
     })
 
 class LoginView(generics.GenericAPIView):
@@ -52,6 +54,8 @@ class LoginView(generics.GenericAPIView):
     user = UserSerializer(user)
     return Response({
       "user" : user.data,
-      "token": str(refresh),
-      "access_token": str(refresh.access_token)
+      "token" : {
+        "refresh": str(refresh),
+        "access_token": str(refresh.access_token)
+      }
     })
